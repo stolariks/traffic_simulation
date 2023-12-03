@@ -5,7 +5,7 @@ LOGIN=xstola03_xpavli95
 SRCS			= $(shell find ./src -type f -name "*.cpp")
 HEADS			= $(shell find ./src/include -type f -name "*.h")
 
-OBJ = $(SRCS:.cpp=.o)
+OBJS = $(SRCS:.cpp=.o)
 
 DEPS	= Makefile.depend
 
