@@ -3,6 +3,7 @@
 #### csd\_vuc\_zai\_2022 
 RDPI = Yearly Average of Daily Intensities
 * Value: 22106
+* Rounded to: 21600 for exponential distribution with center = 8 sec
 * Road ID: 90118
 
 Traffic comparison before/after D1 Turany - Dubna Skala:  
@@ -13,12 +14,12 @@ Estimated relief: **33.56%**
 #### Types of vehicles:
 Acceleration of different vehicle categories:
 
-|                      |   Spolu   |  Osobné   | Autobusy | Nákladné autá vr. špeciálnych |
-|----------------------|:---------:|:---------:|:--------:|:-----------------------------:|
-| Count                | 3_528_096 | 2_555_491 |  8 422   |            348 876            |
-| Acceleration [m/s^2] |     X     |    0.7    |   0.24   |             0.18              |
-| Deceleration [m/s^2] |     X     |   2.59    |   0.51   |             0.48              |
-| Length       [Cell]  |     X     |     1     |    2     |               3               |
+|                           |    All    | Personal  |  Bus  |  Truck  |
+|---------------------------|:---------:|:---------:|:-----:|:-------:|
+| Count                     | 2_912_394 | 2_555_491 | 8 422 | 348 876 |
+| Acceleration [Cell / s^2] |     X     |   0.14    | 0.05  |  0.04   |
+| Deceleration [Cell / s^2] |     X     |   0.52    |  0.1  |  0.09   |
+| Length       [Cell]       |     X     |     1     |   2   |    3    |
 
 Sources:
 * Vehicle distribution: **Holienčíková Katarína** [Štatistický úrad SR](https://www.statistics.sk)
