@@ -10,39 +10,73 @@
 
 #include <optional>
 #include <vector>
+#include <array>
 #include <queue>
 #include <string>
 #include <random>
 
-class RoadMap {
+class Road {
 public:
+
     static const int METERS_PER_CELL = 5;
     static const int RAND_DEC_TH = 2;
+    static const int RAND_OVERTAKE_TH = 60;
 
+    Road(uint32_t road_len, uint32_t max_speed);
+
+    virtual
+    ~Road() = default;
+
+    virtual
+    void update() = 0;
+
+    virtual
+    void insert(Vehicle vehicle) = 0;
+
+    virtual
+    std::string to_str() const = 0;
+
+    virtual
+    uint32_t size() const = 0;
+
+protected:
+
+    /**
+    * Take the vehicle which is in the front of the queue
+    * and try to insert it into road
+    * On successful insertion, pop the vehicle from queue
+    * @return whether vehicle was inserted
+    */
+    virtual
+    bool insert_vehicle_from_queue() = 0;
+
+    uint32_t m_max_speed;
+    uint32_t m_cell_count;
+    std::vector<std::vector<std::optional<Vehicle>>> m_road;
+    std::queue<Vehicle> m_queue;
+    std::mt19937 m_gen;
+
+};
+class RoadMap : public Road{
+public:
     /**
      *
      * @param cells
      * @param max_speed
      */
-    explicit RoadMap(uint32_t road_len, int32_t max_speed);
+    RoadMap(uint32_t road_len, uint32_t max_speed);
 
-    void update();
+    void update() override;
 
-    void insert(Vehicle vehicle);
+    void insert(Vehicle vehicle) override;
 
-    std::string to_str() const;
+    std::string to_str() const override;
 
-    uint32_t size() const;
+    uint32_t size() const override;
 
-private:
+protected:
 
-    /**
-     * Take the vehicle which is in the front of the queue
-     * and try to insert it into road
-     * On successful insertion, pop the vehicle from queue
-     * @return whether vehicle was inserted
-     */
-    bool insert_vehicle_from_queue();
+    bool insert_vehicle_from_queue() override;
 
     /**
      * Get distance to the next vehicle
@@ -51,10 +85,25 @@ private:
      * @return distance to the vehicle in front, int_max if there are no cars in front
      */
     int32_t get_driving_distance(int32_t from);
-    uint32_t m_max_speed;
-    uint32_t m_cell_count;
-    std::queue<Vehicle> m_queue;
-    std::vector<std::optional<Vehicle>> m_road;
-    std::mt19937 m_gen;
+};
 
+class RoadMapTwoLane : public Road {
+public:
+    RoadMapTwoLane(uint32_t road_len, uint32_t max_speed, uint8_t two_lane_portion);
+
+    void update() override;
+
+    void insert(Vehicle vehicle) override;
+
+    std::string to_str() const override;
+
+    uint32_t size() const override;
+
+protected:
+
+    bool insert_vehicle_from_queue() override;
+
+    int32_t get_driving_distance(uint32_t from, uint8_t lane);
+
+    uint32_t m_two_lane_begin;
 };
