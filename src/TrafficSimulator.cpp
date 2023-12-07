@@ -53,7 +53,7 @@ void TrafficSimulator::simulate(int seconds, float speed_up_ratio = 1) {
         }
 
         std::cout << road_boundary << '\n';
-        std::cout << m_road->to_str();;
+        std::cout << m_road->to_str() << '\n';
         std::cout << road_boundary << '\n';
         m_road->update();
 
