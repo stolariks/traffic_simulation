@@ -15,6 +15,9 @@
 #include <string>
 #include <random>
 
+#define LEFT_LANE 1
+#define RIGHT_LANE 0
+
 class Road {
 public:
 
@@ -105,5 +108,5 @@ protected:
 
     int32_t get_driving_distance(uint32_t from, uint8_t lane);
 
-    uint32_t m_two_lane_begin;
+    uint32_t m_left_lane_begin;
 };
