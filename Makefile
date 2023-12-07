@@ -1,4 +1,4 @@
-CXX=g++ -Wall -Werror -Wextra
+CXX=g++ -Wall -Werror -Wextra -g
 CXXFLAGS= -std=c++20
 LOGIN=xstola03_xpavli95
 

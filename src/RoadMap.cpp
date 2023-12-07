@@ -20,13 +20,13 @@ RoadMap::RoadMap(uint32_t road_len, uint32_t max_speed) : Road(road_len, max_spe
 }
 
 void RoadMap::update() {
-    for (int32_t i = m_road[0].size() - 1; i >= 0; --i) {
-        if (!m_road[0][i].has_value()) {
+    for (int32_t i = m_road[RIGHT_LANE].size() - 1; i >= 0; --i) {
+        if (!m_road[RIGHT_LANE][i].has_value()) {
             continue;
         }
         // Take vehicle of the road
-        auto vehicle = *(m_road[0][i]);
-        m_road[0][i].reset();
+        auto vehicle = *(m_road[RIGHT_LANE][i]);
+        m_road[RIGHT_LANE][i].reset();
 
         // Step 1: Random acceleration / deceleration
         if (m_gen() % 100 > RAND_DEC_TH) {
@@ -46,8 +46,8 @@ void RoadMap::update() {
 
         // Place the vehicle at a new position, if new position is still in scope
         uint32_t vehicle_new_pos = i + vehicle.get_speed();
-        if (vehicle_new_pos < m_road[0].size()) {
-            m_road[0][vehicle_new_pos] = vehicle;
+        if (vehicle_new_pos < m_road[RIGHT_LANE].size()) {
+            m_road[RIGHT_LANE][vehicle_new_pos] = vehicle;
         }
     }
     insert_vehicle_from_queue();
@@ -55,7 +55,7 @@ void RoadMap::update() {
 
 std::string RoadMap::to_str() const {
     std::string road_string {};
-    for (const auto& road_cell : m_road[0]) {
+    for (const auto& road_cell : m_road[RIGHT_LANE]) {
         if (!road_cell.has_value()) {
             road_string += '.';
         }
@@ -68,18 +68,18 @@ std::string RoadMap::to_str() const {
 
 void RoadMap::insert(Vehicle vehicle) {
     for (uint8_t i = 0; i < vehicle.Length; ++i) {
-        if (m_road[0][i].has_value()) {
+        if (m_road[RIGHT_LANE][i].has_value()) {
             m_queue.push(vehicle);
             return; // Place for vehicle is already occupied
         }
     }
-    m_road[0][vehicle.Length - 1] = vehicle;
+    m_road[RIGHT_LANE][vehicle.Length - 1] = vehicle;
 }
 
 int32_t RoadMap::get_driving_distance(int32_t from) {
-    for (uint32_t i = from; i < m_road[0].size(); ++i) {
-        if (m_road[0][i].has_value()) {
-            return i - from - m_road[0][i].value().Length;
+    for (uint32_t i = from; i < m_road[RIGHT_LANE].size(); ++i) {
+        if (m_road[RIGHT_LANE][i].has_value()) {
+            return i - from - m_road[RIGHT_LANE][i].value().Length;
         }
     }
     return INT32_MAX;
@@ -91,23 +91,23 @@ bool RoadMap::insert_vehicle_from_queue() {
     }
     auto vehicle = m_queue.front();
     for (int i = 0; i < vehicle.Length; ++i) {
-        if (m_road[0][i].has_value()){
+        if (m_road[RIGHT_LANE][i].has_value()){
             return false; // Cells required to place the vehicle are already occupied
         }
     }
-    m_road[0][vehicle.Length - 1] = vehicle;
+    m_road[RIGHT_LANE][vehicle.Length - 1] = vehicle;
     m_queue.pop();
     return true;
 }
 
 uint32_t RoadMap::size() const {
-    return m_road[0].size();
+    return m_road[RIGHT_LANE].size();
 }
 
 RoadMapTwoLane::RoadMapTwoLane(uint32_t road_len, uint32_t max_speed, uint8_t two_lane_portion) : Road(road_len, max_speed) {
     m_road.emplace_back(m_cell_count, std::nullopt);
     m_road.emplace_back(m_cell_count, std::nullopt);
-    m_two_lane_begin = static_cast<int>(m_cell_count - (two_lane_portion / 100.f * m_cell_count)) - 1;
+    m_left_lane_begin = static_cast<int>((100 - two_lane_portion) / 100.f * m_cell_count);
 
 }
 
@@ -135,33 +135,41 @@ void RoadMapTwoLane::update() {
             }
 
             // Step 2: Check driving distances and overtaking opportunities
-            if (l == 1) { // Left lane code
-                auto driving_distance_left = get_driving_distance(x, l);
+            if (l == LEFT_LANE) { // Left lane code
+                auto driving_distance_left = get_driving_distance(x, LEFT_LANE);
                 if (vehicle.get_speed() > driving_distance_left) {
                     vehicle.set_speed(driving_distance_left);
                 }
                 vehicle_new_pos = x + vehicle.get_speed();
-                if (m_road[l][vehicle_new_pos].has_value()) {
-                    vehicle_new_lane = l; // Stay if the left lane if right lane is occupied
+                if (m_road[RIGHT_LANE][vehicle_new_pos].has_value()) {
+                    vehicle_new_lane = LEFT_LANE; // Stay in the left lane if right lane is occupied
                 }
                 else {
-                    vehicle_new_lane = 0; // Switch lane if possible
+                    vehicle_new_lane = RIGHT_LANE; // Switch lane if possible
                 }
             } // Left lane
 
             else { // Right lane code
                 // Lane switch condition
+                // If left lane started
                 // If faster than vehicle in front
                 // If overtake wanted
                 // If the distance in the left lane is bigger than the distance in right lane
-                if (vehicle.get_speed() > get_driving_distance(x, l) && m_gen() % 100 > RAND_OVERTAKE_TH &&
-                        get_driving_distance(x, 1) > get_driving_distance(x, 0)) {
-                    if (vehicle.get_speed() > get_driving_distance(x, 1)) {
-                        vehicle.set_speed(get_driving_distance(x, 1));
-                    }
-                    vehicle_new_lane = 1;
-                    vehicle_new_pos = x + vehicle.get_speed();
+                if (static_cast<uint32_t>(x) > m_left_lane_begin &&
+                    vehicle.get_speed() > get_driving_distance(x, RIGHT_LANE) &&
+                    m_gen() % 100 > RAND_OVERTAKE_TH &&
+                    get_driving_distance(x, LEFT_LANE) > get_driving_distance(x, RIGHT_LANE)
+                                ) { // Overtake
+                    vehicle_new_lane = LEFT_LANE;
                 }
+                else { // Don't overtake
+                    vehicle_new_lane = RIGHT_LANE;
+                }
+                // Check driving distance
+                if (vehicle.get_speed() > get_driving_distance(x, vehicle_new_lane)) {
+                    vehicle.set_speed(get_driving_distance(x, vehicle_new_lane));
+                }
+                vehicle_new_pos = x + vehicle.get_speed();
             }
 
             // Step 3: Place the vehicle
@@ -169,24 +177,23 @@ void RoadMapTwoLane::update() {
                 m_road[vehicle_new_lane][vehicle_new_pos] = vehicle;
             }
         } // Lane update
-        insert_vehicle_from_queue();
     } // Update step
-
+    insert_vehicle_from_queue();
 }
 
 void RoadMapTwoLane::insert(Vehicle vehicle) {
     for (uint8_t i = 0; i < vehicle.Length; ++i) {
-        if (m_road[0][i].has_value()) {
+        if (m_road[RIGHT_LANE][i].has_value()) {
             m_queue.push(vehicle);
             return; // Place for vehicle is already occupied
         }
     }
-    m_road[0][vehicle.Length - 1] = vehicle;
+    m_road[RIGHT_LANE][vehicle.Length - 1] = vehicle;
 }
 
 int32_t RoadMapTwoLane::get_driving_distance(uint32_t from, uint8_t lane) {
-    if (lane == 1 && from < m_two_lane_begin) {
-        return -1; // In case the second lane has not started yet
+    if (lane == LEFT_LANE && from < m_left_lane_begin) {
+        return 0; // In case the second lane has not started yet
     }
 
     for (uint32_t i = from; i < m_cell_count; ++i) {
@@ -214,13 +221,18 @@ bool RoadMapTwoLane::insert_vehicle_from_queue() {
 
 std::string RoadMapTwoLane::to_str() const {
     std::string road_string {};
-    for (int i = 0; i < 2; ++i) {
-        for (uint j = 0; j < m_cell_count; ++j) {
+    for (int i = 1; i >= 0; --i) {
+        for (uint32_t j = 1; j < m_cell_count; ++j) {
             if (m_road[i][j].has_value()) {
                 road_string += m_road[i][j].value().to_str();
             }
             else {
-                road_string += j < m_two_lane_begin ? '#' : '.';
+                if (i == 1) {
+                    road_string += j < m_left_lane_begin ? '#' : '.';
+                }
+                else {
+                    road_string += '.';
+                }
             }
         }
         road_string += '\n';

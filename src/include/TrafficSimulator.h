@@ -1,7 +1,7 @@
 /**
  * @authors Samuel Stolarik, Jan Pavlicek
  * @date 5-12-2023
- * @file OneLaneRoadSimulator.h
+ * @file TrafficSimulator.h
  */
 
 #pragma once
@@ -10,15 +10,21 @@
 #include "RoadMap.h"
 #include "Vehicle.h"
 
-class OneLaneRoadSimulator {
+enum class SimType {
+    OneLane,
+    TwoLane
+};
+
+class TrafficSimulator {
 public:
-    OneLaneRoadSimulator(
+    TrafficSimulator(
             int car_portion,
             int bus_portion,
             int truck_portion,
             int arrival_interval,
             int max_speed_ms,
-            int road_length_m
+            int road_length_m,
+            SimType type
             );
 
     static
@@ -38,5 +44,5 @@ private:
     int m_car_portion, m_bus_portion, m_truck_portion;
     int m_max_speed;
     int m_arrival_interval;
-    std::unique_ptr<RoadMap> m_road;
+    std::unique_ptr<Road> m_road;
 };
