@@ -20,7 +20,7 @@ TrafficSimulator::TrafficSimulator(int car_portion, int bus_portion, int truck_p
             m_road = std::make_unique<RoadMap>(road_length_m, m_max_speed);
         break;
         case SimType::TwoLane:
-            m_road = std::make_unique<RoadMapTwoLane>(road_length_m, max_speed_ms, 20);
+            m_road = std::make_unique<RoadMapTwoLane>(road_length_m, max_speed_ms, 100);
     }
 }
 
@@ -30,7 +30,7 @@ void TrafficSimulator::simulate(int seconds, float speed_up_ratio = 1) {
     // TODO fix exponential sampling
     std::exponential_distribution<> d(m_arrival_interval);
 
-    std::string road_boundary = std::string(m_road->size(), '-');
+    std::string road_boundary = std::string(m_road->size() + 4, '-');
     int next_arrival = d(gen);
     int vehicle_type = gen() % 1000 + 1;
     for (int i = 0; i < seconds; ++i) {
