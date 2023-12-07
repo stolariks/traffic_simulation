@@ -50,15 +50,18 @@ std::string Vehicle::to_str() const {
     std::string veh_string {};
     switch (m_type) {
         case vt_t::car:
-            veh_string = "C";
             break;
         case vt_t::bus:
-            veh_string = "BB";
+            veh_string = std::to_string(this->get_speed()) + "B";
             break;
         case vt_t::truck:
-            veh_string = "TTT";
+            veh_string = std::to_string(this->get_speed()) + "TT";
             break;
     }
 
     return veh_string + std::to_string(get_speed());
+}
+
+vt_t Vehicle::get_vehicle_type() const {
+    return m_type;
 }
