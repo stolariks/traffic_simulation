@@ -56,7 +56,7 @@ void RoadMap::update() {
 
 std::string RoadMap::to_str() const {
     std::string road_string {"||"};
-    for (int32_t i = m_road[RIGHT_LANE].size(); i >= 0; --i) {
+    for (int32_t i = m_road[RIGHT_LANE].size() - 1; i >= 0; --i) {
         if (!m_road[RIGHT_LANE][i].has_value()) {
             road_string += ' ';
         }
@@ -75,8 +75,9 @@ std::string RoadMap::to_str() const {
             road_string += vehicle.to_str();
         }
     }
+    road_string += "||";
     std::reverse(road_string.begin(), road_string.end());
-    return road_string + "||";
+    return road_string;
 }
 
 void RoadMap::insert(Vehicle vehicle) {
@@ -236,7 +237,7 @@ std::string RoadMapTwoLane::to_str() const {
     std::string road_string {};
     for (int lane = 1; lane >= 0; --lane) {
         std::string lane_string {"||"};
-        for (int32_t i = m_road[lane].size(); i >= 0; --i) {
+        for (int32_t i = m_road[lane].size() - 1; i >= 0; --i) {
             if (lane == LEFT_LANE && static_cast<uint32_t>(i) < m_left_lane_begin) {
                 lane_string += '#';
                 continue;

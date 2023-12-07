@@ -23,7 +23,7 @@ public:
 
     static const int METERS_PER_CELL = 5;
     static const int RAND_DEC_TH = 2;
-    static const int RAND_OVERTAKE_TH = 60;
+    static const int RAND_OVERTAKE_TH = 20;
 
     Road(uint32_t road_len, uint32_t max_speed);
 
