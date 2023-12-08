@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <random>
 
-Road::Road(uint32_t road_len, uint32_t max_speed) : m_max_speed(max_speed / METERS_PER_CELL), m_cell_count(road_len / METERS_PER_CELL) {
+Road::Road(uint32_t road_len, uint32_t max_speed) : m_max_speed(max_speed / METERS_PER_CELL), m_min_speed(static_cast<uint32_t>(m_max_speed * 0.4)), m_cell_count(road_len / METERS_PER_CELL) {
     std::random_device rd;
     m_gen = std::mt19937(rd());
     m_queue = {};
@@ -73,7 +73,9 @@ void RoadMap::update() {
             }
         }
         else {
-            vehicle.decelerate();
+            if (vehicle.get_speed() >= m_min_speed) {
+                vehicle.decelerate();
+            }
         }
 
         // Step 2: Check driving distance
@@ -176,7 +178,7 @@ void RoadMapTwoLane::update() {
             m_road[l][x].reset();
 
             // Step 1: Random acceleration / deceleration
-            if (m_gen() % 100 > RAND_DEC_TH) {
+            if (l == LEFT_LANE || vehicle.get_speed() <= m_min_speed || m_gen() % 100 > RAND_DEC_TH) {
                 if (vehicle.get_speed() < m_max_speed) {
                     vehicle.accelerate();
                 }

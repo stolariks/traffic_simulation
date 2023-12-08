@@ -22,7 +22,7 @@ class Road {
 public:
 
     static const int METERS_PER_CELL = 5;
-    static const int RAND_DEC_TH = 2;
+    static const int RAND_DEC_TH = 10;
     static const int RAND_OVERTAKE_TH = 20;
 
     Road(uint32_t road_len, uint32_t max_speed);
@@ -56,6 +56,7 @@ protected:
     bool lane_free_check(uint32_t position, uint8_t lane, uint8_t vehicle_length);
 
     uint32_t m_max_speed;
+    uint32_t m_min_speed;
     uint32_t m_cell_count;
     std::vector<std::vector<std::optional<Vehicle>>> m_road;
     std::queue<Vehicle> m_queue;
