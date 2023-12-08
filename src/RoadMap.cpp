@@ -155,11 +155,11 @@ void RoadMapTwoLane::update() {
                     vehicle.set_speed(driving_distance_left);
                 }
                 vehicle_new_pos = x + vehicle.get_speed();
-                if (m_road[RIGHT_LANE][vehicle_new_pos].has_value()) {
-                    vehicle_new_lane = LEFT_LANE; // Stay in the left lane if right lane is occupied
+                if (lane_free_check(vehicle_new_pos, RIGHT_LANE, vehicle.Length)) {
+                    vehicle_new_lane = RIGHT_LANE; // Switch lane if possible
                 }
                 else {
-                    vehicle_new_lane = RIGHT_LANE; // Switch lane if possible
+                    vehicle_new_lane = LEFT_LANE; // Stay in the left lane if right lane is occupied
                 }
             } // Left lane
 
@@ -212,7 +212,8 @@ int32_t RoadMapTwoLane::get_driving_distance(uint32_t from, uint8_t lane) {
 
     for (uint32_t i = from; i < m_cell_count; ++i) {
         if (m_road[lane][i].has_value()) {
-            return i - from - m_road[lane][i].value().Length;
+            int32_t distance = i - from - m_road[lane][i].value().Length;
+            return distance >= 0 ? distance : 0;
         }
     }
     return INT32_MAX;
@@ -272,4 +273,41 @@ std::string RoadMapTwoLane::to_str() const {
 
 uint32_t RoadMapTwoLane::size() const {
     return m_cell_count;
+}
+
+bool RoadMapTwoLane::lane_free_check(uint32_t position, uint8_t lane, uint8_t vehicle_length) {
+    if (m_road[lane][position].has_value()) {
+        return false;
+    }
+    // STEP 1: Check for car in front
+    // Check road length boundaries
+    if (position + 1 >= m_cell_count) {
+        return false;
+    }
+    // Check if vehicle in front of this, by 1 has length bigger than 1
+    // _______C________
+    // _______BB_______
+    if (m_road[lane][position + 1].has_value() && m_road[lane][position + 1].value().Length > 1) {
+        return false;
+    }
+    // Check road length boundaries
+    if (position + 2 >= m_cell_count) {
+        return false;
+    }
+    // Check if vehicle in front of this, by 2 places has length bigger than 2
+    if (m_road[lane][position + 2].has_value() && m_road[lane][position + 2].value().Length > 2) {
+        return false;
+    }
+
+    // Check for a car behind (if length of this vehicle is greater than 1)
+    if (vehicle_length == 1) {
+        return true;
+    }
+    for (int i = 1; i < vehicle_length; ++i) {
+        if (m_road[lane][position - i].has_value()) {
+            return false;
+        }
+    }
+    // Now lane switch is surely possible
+    return true;
 }
