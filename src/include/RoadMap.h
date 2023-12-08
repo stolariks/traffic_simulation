@@ -104,6 +104,8 @@ public:
 
 protected:
 
+    bool lane_free_check(uint32_t position, uint8_t lane, uint8_t vehicle_length);
+
     bool insert_vehicle_from_queue() override;
 
     int32_t get_driving_distance(uint32_t from, uint8_t lane);
