@@ -33,7 +33,8 @@ uint8_t Vehicle::get_speed() const {
 }
 
 void Vehicle::set_speed(uint8_t speed) {
-    m_current_speed = speed;
+    m_current_speed -= static_cast<int>(m_current_speed);
+    m_current_speed = m_current_speed + static_cast<float>(speed);
 }
 
 void Vehicle::accelerate() {
