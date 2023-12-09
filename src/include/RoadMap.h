@@ -53,6 +53,8 @@ protected:
     virtual
     bool insert_vehicle_from_queue() = 0;
 
+    bool lane_free_check(uint32_t position, uint8_t lane, uint8_t vehicle_length);
+
     uint32_t m_max_speed;
     uint32_t m_cell_count;
     std::vector<std::vector<std::optional<Vehicle>>> m_road;
@@ -103,8 +105,6 @@ public:
     uint32_t size() const override;
 
 protected:
-
-    bool lane_free_check(uint32_t position, uint8_t lane, uint8_t vehicle_length);
 
     bool insert_vehicle_from_queue() override;
 

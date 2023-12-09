@@ -16,6 +16,43 @@ Road::Road(uint32_t road_len, uint32_t max_speed) : m_max_speed(max_speed / METE
     m_road = std::vector<std::vector<std::optional<Vehicle>>>();
 }
 
+bool Road::lane_free_check(uint32_t position, uint8_t lane, uint8_t vehicle_length) {
+    if (m_road[lane][position].has_value()) {
+        return false;
+    }
+    // STEP 1: Check for car in front
+    // Check road length boundaries
+    if (position + 1 >= m_cell_count) {
+        return false;
+    }
+    // Check if vehicle in front of this, by 1 has length bigger than 1
+    // _______C________
+    // _______BB_______
+    if (m_road[lane][position + 1].has_value() && m_road[lane][position + 1].value().Length > 1) {
+        return false;
+    }
+    // Check road length boundaries
+    if (position + 2 >= m_cell_count) {
+        return false;
+    }
+    // Check if vehicle in front of this, by 2 places has length bigger than 2
+    if (m_road[lane][position + 2].has_value() && m_road[lane][position + 2].value().Length > 2) {
+        return false;
+    }
+
+    // Check for a car behind (if length of this vehicle is greater than 1)
+    if (vehicle_length == 1) {
+        return true;
+    }
+    for (int i = 1; i < vehicle_length && static_cast<int>(position) - i >= 0; ++i) {
+        if (m_road[lane][position - i].has_value()) {
+            return false;
+        }
+    }
+    // Now lane switch is surely possible
+    return true;
+}
+
 RoadMap::RoadMap(uint32_t road_len, uint32_t max_speed) : Road(road_len, max_speed) {
     m_road.emplace_back(m_cell_count, std::nullopt);
 }
@@ -82,7 +119,7 @@ std::string RoadMap::to_str() const {
 
 void RoadMap::insert(Vehicle vehicle) {
     for (uint8_t i = 0; i < vehicle.Length; ++i) {
-        if (m_road[RIGHT_LANE][i].has_value()) {
+        if (!lane_free_check(i, RIGHT_LANE, vehicle.Length)) {
             m_queue.push(vehicle);
             return; // Place for vehicle is already occupied
         }
@@ -105,7 +142,7 @@ bool RoadMap::insert_vehicle_from_queue() {
     }
     auto vehicle = m_queue.front();
     for (int i = 0; i < vehicle.Length; ++i) {
-        if (m_road[RIGHT_LANE][i].has_value()){
+        if (!lane_free_check(i, RIGHT_LANE, vehicle.Length)){
             return false; // Cells required to place the vehicle are already occupied
         }
     }
@@ -197,7 +234,7 @@ void RoadMapTwoLane::update() {
 
 void RoadMapTwoLane::insert(Vehicle vehicle) {
     for (uint8_t i = 0; i < vehicle.Length; ++i) {
-        if (m_road[RIGHT_LANE][i].has_value()) {
+        if (!lane_free_check(i, RIGHT_LANE, vehicle.Length)) {
             m_queue.push(vehicle);
             return; // Place for vehicle is already occupied
         }
@@ -225,7 +262,7 @@ bool RoadMapTwoLane::insert_vehicle_from_queue() {
     }
     auto vehicle = m_queue.front();
     for(int i = 0; i < vehicle.Length; ++i) {
-        if (m_road[0][i].has_value()) {
+        if (!lane_free_check(i, RIGHT_LANE, vehicle.Length)) {
             return false;
         }
     }
@@ -273,41 +310,4 @@ std::string RoadMapTwoLane::to_str() const {
 
 uint32_t RoadMapTwoLane::size() const {
     return m_cell_count;
-}
-
-bool RoadMapTwoLane::lane_free_check(uint32_t position, uint8_t lane, uint8_t vehicle_length) {
-    if (m_road[lane][position].has_value()) {
-        return false;
-    }
-    // STEP 1: Check for car in front
-    // Check road length boundaries
-    if (position + 1 >= m_cell_count) {
-        return false;
-    }
-    // Check if vehicle in front of this, by 1 has length bigger than 1
-    // _______C________
-    // _______BB_______
-    if (m_road[lane][position + 1].has_value() && m_road[lane][position + 1].value().Length > 1) {
-        return false;
-    }
-    // Check road length boundaries
-    if (position + 2 >= m_cell_count) {
-        return false;
-    }
-    // Check if vehicle in front of this, by 2 places has length bigger than 2
-    if (m_road[lane][position + 2].has_value() && m_road[lane][position + 2].value().Length > 2) {
-        return false;
-    }
-
-    // Check for a car behind (if length of this vehicle is greater than 1)
-    if (vehicle_length == 1) {
-        return true;
-    }
-    for (int i = 1; i < vehicle_length; ++i) {
-        if (m_road[lane][position - i].has_value()) {
-            return false;
-        }
-    }
-    // Now lane switch is surely possible
-    return true;
 }
