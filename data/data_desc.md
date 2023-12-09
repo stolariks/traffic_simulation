@@ -2,8 +2,13 @@
 
 #### csd\_vuc\_zai\_2022 
 RDPI = Yearly Average of Daily Intensities
-* Value: 22106
-* Rounded to: 21600 for exponential distribution with center = 8 sec
+* Value: AADT: 22106
+* K-factor estimate: 12%
+  * [Source](https://www.fhwa.dot.gov/policyinformation/pubs/pl18027_traffic_data_pocket_guide.pdf)
+* Peak hour traffic (One direction): (0.12 * 22106) / 2 = 1326.36
+* Design hourly volume
+* 0.368 Vehicles / second
+* Rounded to 1200 for exp. distribution with lamba = 1/3
 * Road ID: 90118
 
 Traffic comparison before/after D1 Turany - Dubna Skala:  
@@ -16,7 +21,7 @@ Acceleration of different vehicle categories:
 
 |                           |    All    | Personal  |  Bus  |  Truck  |
 |---------------------------|:---------:|:---------:|:-----:|:-------:|
-| Count                     | 2_912_394 | 2_555_491 | 8 422 | 348 876 |
+| Count                     | 3 079 662 | 2 555 491 | 8 422 | 515 749 |
 | Acceleration [Cell / s^2] |     X     |   0.14    | 0.05  |  0.04   |
 | Deceleration [Cell / s^2] |     X     |   0.52    |  0.1  |  0.09   |
 | Length       [Cell]       |     X     |     1     |   2   |    3    |

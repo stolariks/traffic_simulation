@@ -11,7 +11,7 @@
 #include <iostream>
 
 TrafficSimulator::TrafficSimulator(int car_portion, int bus_portion, int truck_portion, int arrival_interval,
-                                   int max_speed_ms, int road_length_m, SimType type)
+                                   int max_speed_ms, int road_length_m, SimType type, int left_lane_portion)
                                            : m_car_portion(car_portion), m_bus_portion(bus_portion),
                                            m_truck_portion(truck_portion), m_max_speed(max_speed_ms),
                                            m_arrival_interval(arrival_interval){
@@ -22,13 +22,13 @@ TrafficSimulator::TrafficSimulator(int car_portion, int bus_portion, int truck_p
             m_road = std::make_unique<RoadMap>(road_length_m, m_max_speed);
         break;
         case SimType::TwoLane:
-            m_road = std::make_unique<RoadMapTwoLane>(road_length_m, max_speed_ms, 100);
+            m_road = std::make_unique<RoadMapTwoLane>(road_length_m, max_speed_ms, left_lane_portion);
     }
 }
 
 void TrafficSimulator::simulate(int seconds, float speed_up_ratio = 1) {
     std::exponential_distribution<> gen_next_arrival_time(1.f / m_arrival_interval);
-    std::uniform_int_distribution<int> gen_init_speed(1, 4);
+    std::uniform_int_distribution<int> gen_init_speed(2, 5);
     std::uniform_int_distribution<int> gen_vehicle_type(1, 1000);
 
     std::string road_boundary = std::string(m_road->size() + 4, '-');
@@ -39,6 +39,7 @@ void TrafficSimulator::simulate(int seconds, float speed_up_ratio = 1) {
     for (int i = 0; i < seconds; ++i) {
         // Insert car
         if (i == next_arrival) {
+            initial_speed = gen_init_speed(m_gen);
             if (vehicle_type < m_car_portion){
                 // Crete a car
                 m_road->insert(Vehicle(vt_t::car, initial_speed + 1));

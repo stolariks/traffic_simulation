@@ -9,6 +9,7 @@
 #include <memory>
 #include "RoadMap.h"
 #include "Vehicle.h"
+#include "traffic_simulation.h"
 
 enum class SimType {
     OneLane,
@@ -24,17 +25,9 @@ public:
             int arrival_interval,
             int max_speed_ms,
             int road_length_m,
-            SimType type
+            SimType type,
+            int left_lane_portion
             );
-
-    static
-    const int CAR_PORTION = 877;
-
-    static
-    const int BUS_PORTION = 2;
-
-    static
-    const int TRUCK_PORTION = 121;
 
     void simulate(int seconds, float speed_up_ratio);
 
