@@ -45,4 +45,5 @@ private:
     int m_max_speed;
     int m_arrival_interval;
     std::unique_ptr<Road> m_road;
+    std::mt19937 m_gen;
 };
