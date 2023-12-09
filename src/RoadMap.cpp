@@ -53,6 +53,37 @@ bool Road::lane_free_check(uint32_t position, uint8_t lane, uint8_t vehicle_leng
     return true;
 }
 
+void Road::insert(Vehicle vehicle) {
+    if (vehicle.get_speed() < m_min_speed) {
+        vehicle.set_speed(m_min_speed);
+    }
+    else if (vehicle.get_speed() > m_max_speed) {
+        vehicle.set_speed(m_max_speed);
+    }
+    for (uint8_t i = 0; i < vehicle.Length; ++i) {
+        if (!lane_free_check(i, RIGHT_LANE, vehicle.Length)) {
+            m_queue.push(vehicle);
+            return; // Place for vehicle is already occupied
+        }
+    }
+    m_road[RIGHT_LANE][vehicle.Length - 1] = vehicle;
+}
+
+bool Road::insert_vehicle_from_queue() {
+    if (m_queue.empty()) {
+        return false;
+    }
+    auto vehicle = m_queue.front();
+    for(int i = 0; i < vehicle.Length; ++i) {
+        if (!lane_free_check(i, RIGHT_LANE, vehicle.Length)) {
+            return false;
+        }
+    }
+    m_road[0][vehicle.Length - 1] = vehicle;
+    m_queue.pop();
+    return true;
+}
+
 RoadMap::RoadMap(uint32_t road_len, uint32_t max_speed) : Road(road_len, max_speed) {
     m_road.emplace_back(m_cell_count, std::nullopt);
 }
@@ -119,16 +150,6 @@ std::string RoadMap::to_str() const {
     return road_string;
 }
 
-void RoadMap::insert(Vehicle vehicle) {
-    for (uint8_t i = 0; i < vehicle.Length; ++i) {
-        if (!lane_free_check(i, RIGHT_LANE, vehicle.Length)) {
-            m_queue.push(vehicle);
-            return; // Place for vehicle is already occupied
-        }
-    }
-    m_road[RIGHT_LANE][vehicle.Length - 1] = vehicle;
-}
-
 int32_t RoadMap::get_driving_distance(int32_t from) {
     for (uint32_t i = from; i < m_road[RIGHT_LANE].size(); ++i) {
         if (m_road[RIGHT_LANE][i].has_value()) {
@@ -136,21 +157,6 @@ int32_t RoadMap::get_driving_distance(int32_t from) {
         }
     }
     return INT32_MAX;
-}
-
-bool RoadMap::insert_vehicle_from_queue() {
-    if (m_queue.empty()){
-        return false;
-    }
-    auto vehicle = m_queue.front();
-    for (int i = 0; i < vehicle.Length; ++i) {
-        if (!lane_free_check(i, RIGHT_LANE, vehicle.Length)){
-            return false; // Cells required to place the vehicle are already occupied
-        }
-    }
-    m_road[RIGHT_LANE][vehicle.Length - 1] = vehicle;
-    m_queue.pop();
-    return true;
 }
 
 uint32_t RoadMap::size() const {
@@ -234,16 +240,6 @@ void RoadMapTwoLane::update() {
     insert_vehicle_from_queue();
 }
 
-void RoadMapTwoLane::insert(Vehicle vehicle) {
-    for (uint8_t i = 0; i < vehicle.Length; ++i) {
-        if (!lane_free_check(i, RIGHT_LANE, vehicle.Length)) {
-            m_queue.push(vehicle);
-            return; // Place for vehicle is already occupied
-        }
-    }
-    m_road[RIGHT_LANE][vehicle.Length - 1] = vehicle;
-}
-
 int32_t RoadMapTwoLane::get_driving_distance(uint32_t from, uint8_t lane) {
     if (lane == LEFT_LANE && from < m_left_lane_begin) {
         return 0; // In case the second lane has not started yet
@@ -256,21 +252,6 @@ int32_t RoadMapTwoLane::get_driving_distance(uint32_t from, uint8_t lane) {
         }
     }
     return INT32_MAX;
-}
-
-bool RoadMapTwoLane::insert_vehicle_from_queue() {
-    if (m_queue.empty()) {
-        return false;
-    }
-    auto vehicle = m_queue.front();
-    for(int i = 0; i < vehicle.Length; ++i) {
-        if (!lane_free_check(i, RIGHT_LANE, vehicle.Length)) {
-            return false;
-        }
-    }
-    m_road[0][vehicle.Length - 1] = vehicle;
-    m_queue.pop();
-    return true;
 }
 
 std::string RoadMapTwoLane::to_str() const {

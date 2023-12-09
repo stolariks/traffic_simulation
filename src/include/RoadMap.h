@@ -33,8 +33,7 @@ public:
     virtual
     void update() = 0;
 
-    virtual
-    void insert(Vehicle vehicle) = 0;
+    void insert(Vehicle vehicle);
 
     virtual
     std::string to_str() const = 0;
@@ -50,8 +49,7 @@ protected:
     * On successful insertion, pop the vehicle from queue
     * @return whether vehicle was inserted
     */
-    virtual
-    bool insert_vehicle_from_queue() = 0;
+    bool insert_vehicle_from_queue();
 
     bool lane_free_check(uint32_t position, uint8_t lane, uint8_t vehicle_length);
 
@@ -74,15 +72,11 @@ public:
 
     void update() override;
 
-    void insert(Vehicle vehicle) override;
-
     std::string to_str() const override;
 
     uint32_t size() const override;
 
 protected:
-
-    bool insert_vehicle_from_queue() override;
 
     /**
      * Get distance to the next vehicle
@@ -99,15 +93,11 @@ public:
 
     void update() override;
 
-    void insert(Vehicle vehicle) override;
-
     std::string to_str() const override;
 
     uint32_t size() const override;
 
 protected:
-
-    bool insert_vehicle_from_queue() override;
 
     int32_t get_driving_distance(uint32_t from, uint8_t lane);
 
