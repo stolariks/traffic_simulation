@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "traffic_simulation.h"
 #include "Vehicle.h"
 
 #include <optional>
@@ -21,9 +22,9 @@
 class Road {
 public:
 
-    static const int METERS_PER_CELL = 5;
-    static const int RAND_DEC_TH = 10;
-    static const int RAND_OVERTAKE_TH = 20;
+    static const int METERS_PER_CELL = M_PER_CELL;
+    static const int RAND_DEC_TH = RAND_DECELERATION_THRESHOLD;
+    static const int RAND_OVERTAKE_TH = RAND_OVERTAKE_THRESHOLD;
 
     Road(uint32_t road_len, uint32_t max_speed);
 

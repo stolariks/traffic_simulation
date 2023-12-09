@@ -216,7 +216,7 @@ void RoadMapTwoLane::update() {
                 // If the distance in the left lane is bigger than the distance in right lane
                 if (static_cast<uint32_t>(x) > m_left_lane_begin &&
                     vehicle.get_speed() > get_driving_distance(x, RIGHT_LANE) &&
-                    m_gen() % 100 > RAND_OVERTAKE_TH &&
+                    m_gen() % 100 < RAND_OVERTAKE_TH &&
                     get_driving_distance(x, LEFT_LANE) > get_driving_distance(x, RIGHT_LANE)
                                 ) { // Overtake
                     vehicle_new_lane = LEFT_LANE;

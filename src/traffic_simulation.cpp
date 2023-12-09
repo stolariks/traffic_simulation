@@ -4,6 +4,8 @@
  * @file traffic_simulator.cpp
  */
 
+
+#include "include/traffic_simulation.h"
 #include "include/TrafficSimulator.h"
 
 #include <memory>
@@ -11,14 +13,14 @@
 
 int main() {
     auto simulator = std::make_unique<TrafficSimulator>(
-            877, // Car portion
-            2, // Bus portion
-            121, // Truck portion
-            8, // Arrival interval (seconds)
-            25, // Max speed (m/s)
-            400, // Road length (m)
-            SimType::TwoLane
+            CAR_PORTION_RATIO, // Car portion
+            BUS_PORTION_RATIO, // Bus portion
+            TRUCK_PORTION_RATIO, // Truck portion
+            ARRIVAL_INTERVAL, // Arrival interval (seconds)
+            MAX_SPEED_MS, // Max speed (m/s)
+            ROAD_LENGTH_M, // Road length (m)
+            SimType::OneLane
             );
 
-    simulator->simulate(1000, 5);
+    simulator->simulate(1 * HOUR_SEC, 100);
 }
