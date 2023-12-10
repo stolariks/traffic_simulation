@@ -54,6 +54,10 @@ protected:
 
     bool lane_free_check(uint32_t position, uint8_t lane, uint8_t vehicle_length);
 
+    std::string to_str(uint8_t lane) const;
+
+    std::string to_str(uint8_t lane, uint32_t lane_start) const;
+
     uint32_t m_max_speed;
     uint32_t m_min_speed;
     uint32_t m_cell_count;

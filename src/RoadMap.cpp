@@ -87,6 +87,39 @@ bool Road::insert_vehicle_from_queue() {
     return true;
 }
 
+std::string Road::to_str(uint8_t lane) const {
+    return Road::to_str(lane, 0);
+}
+
+std::string Road::to_str(uint8_t lane, uint32_t lane_start) const {
+    std::string road_string {""};
+    for (int32_t i = m_road[lane].size() - 1; i >= 0; --i) {
+        if (static_cast<uint32_t>(i) < lane_start) {
+            road_string += '#';
+            continue;
+        }
+        if (!m_road[lane][i].has_value()) {
+            road_string += '.';
+        }
+        else {
+            auto vehicle = m_road[lane][i].value();
+            switch (vehicle.get_vehicle_type()) {
+                case vt_t::car:
+                    break;
+                case vt_t::bus:
+                    i -= 1;
+                    break;
+                case vt_t::truck:
+                    i -= 2;
+                    break;
+            }
+            road_string += vehicle.to_str();
+        }
+    }
+    std::reverse(road_string.begin(), road_string.end());
+    return road_string;
+}
+
 RoadMap::RoadMap(uint32_t road_len, uint32_t max_speed) : Road(road_len, max_speed) {
     m_road.emplace_back(m_cell_count, std::nullopt);
 }
@@ -128,29 +161,7 @@ void RoadMap::update() {
 }
 
 std::string RoadMap::to_str() const {
-    std::string road_string {"||"};
-    for (int32_t i = m_road[RIGHT_LANE].size() - 1; i >= 0; --i) {
-        if (!m_road[RIGHT_LANE][i].has_value()) {
-            road_string += ' ';
-        }
-        else {
-            auto vehicle = m_road[RIGHT_LANE][i].value();
-            switch (vehicle.get_vehicle_type()) {
-                case vt_t::car:
-                    break;
-                case vt_t::bus:
-                    i -= 1;
-                    break;
-                case vt_t::truck:
-                    i -= 2;
-                    break;
-            }
-            road_string += vehicle.to_str();
-        }
-    }
-    road_string += "||";
-    std::reverse(road_string.begin(), road_string.end());
-    return road_string;
+    return Road::to_str(RIGHT_LANE);
 }
 
 int32_t RoadMap::get_driving_distance(int32_t from) {
@@ -259,37 +270,8 @@ int32_t RoadMapTwoLane::get_driving_distance(uint32_t from, uint8_t lane) {
 
 std::string RoadMapTwoLane::to_str() const {
     std::string road_string {};
-    for (int lane = 1; lane >= 0; --lane) {
-        std::string lane_string {"||"};
-        for (int32_t i = m_road[lane].size() - 1; i >= 0; --i) {
-            if (lane == LEFT_LANE && static_cast<uint32_t>(i) < m_left_lane_begin) {
-                lane_string += '#';
-                continue;
-            }
-            if (!m_road[lane][i].has_value()) {
-                lane_string += ' ';
-            } else {
-                auto vehicle = m_road[lane][i].value();
-                switch (vehicle.get_vehicle_type()) {
-                    case vt_t::car:
-                        break;
-                    case vt_t::bus:
-                        i -= 1;
-                        break;
-                    case vt_t::truck:
-                        i -= 2;
-                        break;
-                }
-                lane_string += vehicle.to_str();
-            }
-        }
-        lane_string += "||";
-        std::reverse(lane_string.begin(), lane_string.end());
-        if (lane == LEFT_LANE) {
-            lane_string += '\n';
-        }
-        road_string += lane_string;
-    }
+    road_string += Road::to_str(LEFT_LANE, m_left_lane_begin) + '\n';
+    road_string += Road::to_str(RIGHT_LANE);
     return road_string;
 }
 
