@@ -20,18 +20,20 @@ TrafficSimulator::TrafficSimulator(int car_portion, int bus_portion, int truck_p
     switch (type) {
         case SimType::OneLane:
             m_road = std::make_unique<RoadMap>(road_length_m, m_max_speed);
+            m_stats = std::make_shared<OneLaneTrafficData>();
         break;
         case SimType::TwoLane:
             m_road = std::make_unique<RoadMapTwoLane>(road_length_m, max_speed_ms, left_lane_portion);
+            m_stats = std::make_shared<TwoLaneTrafficData>();
     }
 }
 
-void TrafficSimulator::simulate(int seconds, float speed_up_ratio = 1) {
+std::shared_ptr<TrafficData> TrafficSimulator::simulate(int seconds, float speed_up_ratio = 1) {
     std::exponential_distribution<> gen_next_arrival_time(1.f / m_arrival_interval);
     std::uniform_int_distribution<int> gen_init_speed(2, 5);
     std::uniform_int_distribution<int> gen_vehicle_type(1, 1000);
 
-    std::string road_boundary = std::string(m_road->size() + 4, '-');
+    std::string road_boundary = std::string(m_road->size(), '-');
     int next_arrival = gen_next_arrival_time(m_gen);
     int vehicle_type = gen_vehicle_type(m_gen);
     int initial_speed = gen_init_speed(m_gen);
@@ -59,12 +61,15 @@ void TrafficSimulator::simulate(int seconds, float speed_up_ratio = 1) {
         std::cout << road_boundary << '\n';
         std::cout << m_road->to_str() << '\n';
         std::cout << road_boundary << '\n';
-        m_road->update();
+
+        // Update model and save data
+        auto step_stats = m_road->update();
+        m_stats->add_sample(step_stats);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(1000/speed_up_ratio)));
         std::cout << std::flush;
-
     }
+    return m_stats;
 }
 
 void TrafficSimulator::reset() {

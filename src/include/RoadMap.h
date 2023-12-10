@@ -8,6 +8,7 @@
 
 #include "traffic_simulation.h"
 #include "Vehicle.h"
+#include "TrafficData.h"
 
 #include <optional>
 #include <vector>
@@ -32,7 +33,7 @@ public:
     ~Road() = default;
 
     virtual
-    void update() = 0;
+    TrafficDataSample update() = 0;
 
     void insert(Vehicle vehicle);
 
@@ -48,9 +49,9 @@ protected:
     * Take the vehicle which is in the front of the queue
     * and try to insert it into road
     * On successful insertion, pop the vehicle from queue
-    * @return whether vehicle was inserted
+    * @return position of the inserted car, -1 if not inserted
     */
-    bool insert_vehicle_from_queue();
+    int32_t insert_vehicle_from_queue();
 
     bool lane_free_check(uint32_t position, uint8_t lane, uint8_t vehicle_length);
 
@@ -75,7 +76,7 @@ public:
      */
     RoadMap(uint32_t road_len, uint32_t max_speed);
 
-    void update() override;
+    TrafficDataSample update() override;
 
     std::string to_str() const override;
 
@@ -96,7 +97,7 @@ class RoadMapTwoLane : public Road {
 public:
     RoadMapTwoLane(uint32_t road_len, uint32_t max_speed, uint8_t two_lane_portion);
 
-    void update() override;
+    TrafficDataSample update() override;
 
     std::string to_str() const override;
 
