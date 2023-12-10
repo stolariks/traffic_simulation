@@ -296,7 +296,7 @@ TrafficDataSample RoadMapTwoLane::update() {
         }
     }
     stats.avg_speed = num_vehicles > 0 ? stats.avg_speed / num_vehicles : 0;
-    stats.density = num_occupied_spaces / static_cast<float>(m_road[RIGHT_LANE].size() + m_road[LEFT_LANE].size());
+    stats.density = num_occupied_spaces / static_cast<float>(m_road[RIGHT_LANE].size() + (m_road[LEFT_LANE].size() - m_left_lane_begin));
     stats.road_snapshot = {Road::to_str(RIGHT_LANE), Road::to_str(LEFT_LANE, m_left_lane_begin)};
     return stats;
 }
