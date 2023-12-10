@@ -7,6 +7,7 @@
 
 #include "include/traffic_simulation.h"
 #include "include/TrafficSimulator.h"
+#include "include/TrafficData.h"
 
 #include "include/args.h"
 
@@ -70,5 +71,6 @@ int main(int argc, char* argv[]) {
             );
 
     // Run the simulation
-    simulator->simulate(static_cast<int>(args::get(time) * HOUR_SEC), args::get(sim_speed_up));
+    auto traffic_stats = simulator->simulate(static_cast<int>(args::get(time) * HOUR_SEC), args::get(sim_speed_up));
+    std::cerr << traffic_stats->to_csv();
 }
