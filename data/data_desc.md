@@ -2,6 +2,7 @@
 
 #### csd\_vuc\_zai\_2022 
 RDPI = Yearly Average of Daily Intensities
+* Road section [E50 Strecno - Zilina](https://www.google.com/maps/dir/49.1508154,18.8872223/49.1894055,18.8293393/@49.1712134,18.8095448,12z/data=!4m2!4m1!3e0!5m2!1e2!1e4?entry=ttu)
 * Value: AADT: 22106
 * K-factor estimate: 12%
   * [Source](https://www.fhwa.dot.gov/policyinformation/pubs/pl18027_traffic_data_pocket_guide.pdf)
