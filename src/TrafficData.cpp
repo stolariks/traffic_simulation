@@ -4,8 +4,8 @@
  * @file TrafficData.cpp
  */
 
-#include "TrafficData.h"
-#include "RoadMap.h"
+#include "include/TrafficData.h"
+#include "include/RoadMap.h"
 
 TrafficData::TrafficData() {
     m_avg_speed = std::vector<float>();

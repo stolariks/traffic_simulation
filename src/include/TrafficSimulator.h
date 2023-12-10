@@ -7,9 +7,10 @@
 #pragma once
 
 #include <memory>
+#include "traffic_simulation.h"
 #include "RoadMap.h"
 #include "Vehicle.h"
-#include "traffic_simulation.h"
+#include "TrafficData.h"
 
 enum class SimType {
     OneLane,
@@ -29,7 +30,7 @@ public:
             int left_lane_portion
             );
 
-    void simulate(int seconds, float speed_up_ratio);
+    std::shared_ptr<TrafficData> simulate(int seconds, float speed_up_ratio);
 
     void reset();
 
@@ -39,4 +40,5 @@ private:
     int m_arrival_interval;
     std::unique_ptr<Road> m_road;
     std::mt19937 m_gen;
+    std::shared_ptr<TrafficData> m_stats;
 };

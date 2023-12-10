@@ -72,19 +72,19 @@ void Road::insert(Vehicle vehicle) {
     m_road[RIGHT_LANE][vehicle.Length - 1] = vehicle;
 }
 
-bool Road::insert_vehicle_from_queue() {
+int32_t Road::insert_vehicle_from_queue() {
     if (m_queue.empty()) {
         return false;
     }
     auto vehicle = m_queue.front();
     for(int i = 0; i < vehicle.Length; ++i) {
         if (!lane_free_check(i, RIGHT_LANE, vehicle.Length)) {
-            return false;
+            return -1;
         }
     }
-    m_road[0][vehicle.Length - 1] = vehicle;
+    m_road[RIGHT_LANE][vehicle.Length - 1] = vehicle;
     m_queue.pop();
-    return true;
+    return vehicle.Length - 1;
 }
 
 std::string Road::to_str(uint8_t lane) const {
@@ -124,7 +124,11 @@ RoadMap::RoadMap(uint32_t road_len, uint32_t max_speed) : Road(road_len, max_spe
     m_road.emplace_back(m_cell_count, std::nullopt);
 }
 
-void RoadMap::update() {
+TrafficDataSample RoadMap::update() {
+    TrafficDataSample stats {};
+    uint32_t num_vehicles = 0;
+    uint32_t num_occupied_spaces = 0;
+
     for (int32_t i = m_road[RIGHT_LANE].size() - 1; i >= 0; --i) {
         if (!m_road[RIGHT_LANE][i].has_value()) {
             continue;
@@ -151,13 +155,34 @@ void RoadMap::update() {
             vehicle.set_speed(driving_distance);
         }
 
-        // Place the vehicle at a new position, if new position is still in scope
+        // Step 3: Place the vehicle at a new position, if new position is still in scope
         uint32_t vehicle_new_pos = i + vehicle.get_speed();
         if (vehicle_new_pos < m_road[RIGHT_LANE].size()) {
+            // Collect data about the vehicle
+            num_vehicles += 1;
+            num_occupied_spaces += vehicle.Length;
+            stats.avg_speed += vehicle.get_speed();
+
             m_road[RIGHT_LANE][vehicle_new_pos] = vehicle;
         }
+        else {
+            // Vehicle left the road in the current time step
+            stats.flux += 1;
+        }
     }
-    insert_vehicle_from_queue();
+    auto new_vehicle_pos = insert_vehicle_from_queue();
+    if (new_vehicle_pos >= 0) {
+        if (m_road[RIGHT_LANE][new_vehicle_pos].has_value()){
+            auto vehicle = m_road[RIGHT_LANE][new_vehicle_pos].value();
+            num_vehicles++;
+            num_occupied_spaces += vehicle.Length;
+            stats.avg_speed += vehicle.get_speed();
+        }
+    }
+    stats.avg_speed /= num_vehicles;
+    stats.density = num_occupied_spaces / static_cast<float>(m_road[RIGHT_LANE].size());
+    stats.road_snapshot = {this->to_str()};
+    return stats;
 }
 
 std::string RoadMap::to_str() const {
@@ -184,7 +209,11 @@ RoadMapTwoLane::RoadMapTwoLane(uint32_t road_len, uint32_t max_speed, uint8_t tw
 
 }
 
-void RoadMapTwoLane::update() {
+TrafficDataSample RoadMapTwoLane::update() {
+    TrafficDataSample stats {};
+    uint32_t num_vehicles = 0;
+    uint32_t num_occupied_spaces = 0;
+
     uint32_t vehicle_new_pos;
     uint8_t vehicle_new_lane;
 
@@ -247,11 +276,29 @@ void RoadMapTwoLane::update() {
 
             // Step 3: Place the vehicle
             if (vehicle_new_pos < m_cell_count) {
+                num_vehicles += 1;
+                num_occupied_spaces += vehicle.Length;
+                stats.avg_speed += vehicle.get_speed();
                 m_road[vehicle_new_lane][vehicle_new_pos] = vehicle;
+            }
+            else {
+                stats.flux += 1;
             }
         } // Lane update
     } // Update step
-    insert_vehicle_from_queue();
+    auto new_vehicle_pos = insert_vehicle_from_queue();
+    if (new_vehicle_pos >= 0) {
+        if (m_road[RIGHT_LANE][new_vehicle_pos].has_value()){
+            auto vehicle = m_road[RIGHT_LANE][new_vehicle_pos].value();
+            num_vehicles++;
+            num_occupied_spaces += vehicle.Length;
+            stats.avg_speed += vehicle.get_speed();
+        }
+    }
+    stats.avg_speed /= num_vehicles;
+    stats.density = num_occupied_spaces / static_cast<float>(m_road[RIGHT_LANE].size() + m_road[LEFT_LANE].size());
+    stats.road_snapshot = {Road::to_str(RIGHT_LANE), Road::to_str(LEFT_LANE, m_left_lane_begin)};
+    return stats;
 }
 
 int32_t RoadMapTwoLane::get_driving_distance(uint32_t from, uint8_t lane) {

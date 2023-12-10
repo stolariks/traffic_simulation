@@ -50,13 +50,11 @@ protected:
 };
 
 class OneLaneTrafficData : public TrafficData {
-    OneLaneTrafficData() = default;
-
+public:
     std::string to_csv() const override;
 };
 
 class TwoLaneTrafficData : public TrafficData {
-    TwoLaneTrafficData() = default;
-
+public:
     std::string to_csv() const override;
 };
