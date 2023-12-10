@@ -1,6 +1,8 @@
 CXX=g++ -Wall -MMD -Werror -Wextra
+ASSIGNMENT_ID = T8
 LOGIN=xstola03_xpavli95
 TARGET = traffic-simulation
+SIMULATION_STUDY = zprava.pdf
 
 SRCS	= $(shell find ./src -type f -name "*.cpp")
 HEADS	= $(shell find ./src/include -type f -name "*.h")
@@ -61,8 +63,8 @@ $(TARGET): $(OBJS)
 
 -include $(DEPS)
 
-tar: src LICENSE Makefile README.md
-	tar -cvzf $(LOGIN).tar.gz $^
+tar: src LICENSE Makefile $(SIMULATION_STUDY)
+	tar -cvzf $(ASSIGNMENT_ID)_$(LOGIN).tar.gz $^
 
 clean:
 	rm src/*.o src/*.d $(TARGET)
