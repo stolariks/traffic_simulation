@@ -17,6 +17,9 @@ Road::Road(uint32_t road_len, uint32_t max_speed) : m_max_speed(max_speed / METE
 }
 
 bool Road::lane_free_check(uint32_t position, uint8_t lane, uint8_t vehicle_length) {
+    if (position >= m_road[lane].size()) {
+        return false;
+    }
     if (m_road[lane][position].has_value()) {
         return false;
     }

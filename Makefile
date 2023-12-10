@@ -25,5 +25,5 @@ tar: src LICENSE Makefile README.md
 .PHONY: clean all tar
 
 clean:
-	rm src/*.o traffic_simulation
+	rm src/*.o src/*.d traffic_simulation
 
