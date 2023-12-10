@@ -31,7 +31,7 @@
 *.lib
 
 # Executables
-traffic_simulation
+traffic-simulation
 *.exe
 *.out
 *.app
